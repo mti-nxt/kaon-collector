@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,15 +33,15 @@ public class KaoImageDownloaderTest {
      *
      */
     @Test
-    public void imageDownloadTest() throws IOException {
-        final KaoImageDownloader downloader = new KaoImageDownloader(Paths.get("/var/kaotest/"));
-        downloader.downloadByUrl("http://pbs.twimg.com/media/ClfI5ANUkAASwrQ.jpg");
+    public void imageDownloadTest() throws IOException, URISyntaxException {
+        final KaoImageDownloader downloader = new KaoImageDownloader("kaotest/");
+        downloader.downloadByUrl("http://pbs.twimg.com/media/ClfI5ANUkAASwrQ.jpg","sample.jpg");
 
         //TODO ダウンロードしたファイルの検証
         final Path downloadDir = Paths.get("kaotest");
         try {
             final long downloadFiles = Files.list(downloadDir).count();
-            assertThat(downloadFiles,is(1));
+            assertThat(downloadFiles,is(1L));
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException");
