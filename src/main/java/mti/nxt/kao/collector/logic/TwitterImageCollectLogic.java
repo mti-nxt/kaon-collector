@@ -1,8 +1,11 @@
 package mti.nxt.kao.collector.logic;
 
-import twitter4j.*;
+import mti.nxt.kao.collector.image.KaoImageDownloader;
+import mti.nxt.kao.collector.twitter.TwitterClient;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -12,46 +15,23 @@ public class TwitterImageCollectLogic {
 
     // TODO 対象ユーザの渡し方
     String userName = "@masaosaan";
+    Path imagePath =  Paths.get("/var/kao/" +userName.substring(2));
 
     public void execute() {
 
-        final List<String> mediaURLList = getMediaURLList(userName);
+        final TwitterClient twitterClient = new TwitterClient();
+        final List<String> mediaURLList = twitterClient.getMediaURLList(userName);
+
+        KaoImageDownloader downloader = new KaoImageDownloader(imagePath);
+
+        mediaURLList.forEach(url -> {
+            try {
+                downloader.downloadByUrl(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
     }
 
-    private List<String> getMediaURLList(String userName) {
-        Twitter twitter = TwitterFactory.getSingleton();
-
-        try {
-            // ユーザーの表示名からユーザーIDの取得
-            User user = twitter.showUser(userName);
-            System.out.println(user.getId());
-            final long id = user.getId();
-
-            final ResponseList<Status> userTimeline = twitter.getUserTimeline(id);
-
-
-            System.out.println(userTimeline.size());
-
-            List<String> mediaURLList = new ArrayList();
-
-            userTimeline.forEach(tweet -> {
-                System.out.println("tweet:--------------");
-                System.out.println(tweet.getText());
-                System.out.println("--------------------");
-                final MediaEntity[] mediaEntities = tweet.getMediaEntities();
-                for (MediaEntity media : mediaEntities) {
-                    System.out.println("Media=========");
-                    System.out.println(media.getMediaURL());
-                    mediaURLList.add(media.getMediaURL());
-                }
-            });
-
-            return mediaURLList;
-
-
-        } catch (TwitterException e) {
-            e.printStackTrace();
-        }
-    }
 }
