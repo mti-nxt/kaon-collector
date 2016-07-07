@@ -5,8 +5,7 @@ import mti.nxt.kao.collector.twitter.TwitterClient;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,21 +17,27 @@ public class TwitterImageCollectLogic {
     String userName = "@masaosaan";
     String imagePath =  "/var/kao/" +userName.substring(2) + "/";
 
+    /**
+     * 対象のアカウントのtweetから画像を集めてs3バケットにアップする
+     */
     public void execute() {
 
         final TwitterClient twitterClient = new TwitterClient();
         final List<String> mediaURLList = twitterClient.getMediaURLList(userName);
-
+        final List<String> imageList = new ArrayList<>();
 
         mediaURLList.forEach(url -> {
             try {
                 KaoImageDownloader downloader = new KaoImageDownloader(imagePath);
-                String fileName= "todo";
+                String fileName= url.substring(url.lastIndexOf("/"));
                 downloader.downloadByUrl(url,fileName);
+                imageList.add(fileName);
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         });
+
+
 
     }
 

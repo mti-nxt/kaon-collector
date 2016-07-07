@@ -34,11 +34,11 @@ public class KaoImageDownloaderTest {
      */
     @Test
     public void imageDownloadTest() throws IOException, URISyntaxException {
-        final KaoImageDownloader downloader = new KaoImageDownloader("kaotest/");
+        final KaoImageDownloader downloader = new KaoImageDownloader("kaotest/download/");
         downloader.downloadByUrl("http://pbs.twimg.com/media/ClfI5ANUkAASwrQ.jpg","sample.jpg");
 
         //TODO ダウンロードしたファイルの検証
-        final Path downloadDir = Paths.get("kaotest");
+        final Path downloadDir = Paths.get("kaotest/download");
         try {
             final long downloadFiles = Files.list(downloadDir).count();
             assertThat(downloadFiles,is(1L));
