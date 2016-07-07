@@ -1,11 +1,35 @@
 package mti.nxt.kao.collector.s3;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.junit.Test;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by masakkuma on 2016/07/08.
  */
 public class S3UploaderTest {
+
+    Properties properties = new Properties();
+
+    {
+        try (InputStream inputStream = new FileInputStream("kaocollector.properties")) {
+            properties.load(inputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void uploadTest() {
@@ -13,6 +37,16 @@ public class S3UploaderTest {
         String imagesDirPath = "kaotest/upload";
         uploader.upload(imagesDirPath);
 
+        AWSCredentials credentials = new BasicAWSCredentials(properties.getProperty("aws.accessKey"),properties.getProperty("aws.accessSecretKey"));
+
+        final AmazonS3Client s3Client = new AmazonS3Client(credentials);
+
+        final ListObjectsV2Result listObjects = s3Client.listObjectsV2("kao-class-dev");
+        final List<S3ObjectSummary> objectSummaries = listObjects.getObjectSummaries();
+
+        objectSummaries.forEach(object -> {
+            System.out.println(object.getKey());
+        });
 
     }
 
