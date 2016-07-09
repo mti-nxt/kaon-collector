@@ -11,8 +11,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by masakkuma on 2016/07/08.
@@ -32,8 +38,8 @@ public class S3UploaderTest {
     }
 
     @Test
-    public void uploadTest() {
-        S3Uploader uploader = new S3Uploader();
+    public void uploadTest() throws IOException {
+        S3Uploader uploader = new S3Uploader("test");
         String imagesDirPath = "kaotest/upload";
         uploader.upload(imagesDirPath);
 
@@ -41,11 +47,18 @@ public class S3UploaderTest {
 
         final AmazonS3Client s3Client = new AmazonS3Client(credentials);
 
-        final ListObjectsV2Result listObjects = s3Client.listObjectsV2("kao-class-dev");
+        final ListObjectsV2Result listObjects = s3Client.listObjectsV2("kao-class-dev","images/test");
         final List<S3ObjectSummary> objectSummaries = listObjects.getObjectSummaries();
+        final ArrayList<String> objectNames = new ArrayList<>();
 
         objectSummaries.forEach(object -> {
+            objectNames.add(object.getKey());
             System.out.println(object.getKey());
+        });
+
+        Files.list(Paths.get(imagesDirPath)).forEach(file -> {
+            assertThat(objectNames,hasItem("images/test/" + file.getFileName().toString()));
+            System.out.println(file.getFileName().toString());
         });
 
     }
