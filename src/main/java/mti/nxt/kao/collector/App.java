@@ -16,6 +16,8 @@ public class App {
         TwitterImageCollectLogic logic = new TwitterImageCollectLogic();
         logic.execute();
 
+        System.out.println("end kao collector");
+
 
     }
 

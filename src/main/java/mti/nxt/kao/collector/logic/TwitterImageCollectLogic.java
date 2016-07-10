@@ -1,11 +1,12 @@
 package mti.nxt.kao.collector.logic;
 
+import mti.nxt.kao.collector.config.KaocollectorConfig;
 import mti.nxt.kao.collector.image.KaoImageDownloader;
+import mti.nxt.kao.collector.s3.S3Uploader;
 import mti.nxt.kao.collector.twitter.TwitterClient;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,9 +14,8 @@ import java.util.List;
  */
 public class TwitterImageCollectLogic {
 
-    // TODO 対象ユーザの渡し方
-    String userName = "@masaosaan";
-    String imagePath =  "/var/kao/" +userName.substring(2) + "/";
+    String userName = KaocollectorConfig.get("kao.username");
+    String imagePath =  KaocollectorConfig.get("kao.tmppath") +userName.substring(2) + "/";
 
     /**
      * 対象のアカウントのtweetから画像を集めてs3バケットにアップする
@@ -23,20 +23,25 @@ public class TwitterImageCollectLogic {
     public void execute() {
 
         final TwitterClient twitterClient = new TwitterClient();
-        final List<String> mediaURLList = twitterClient.getMediaURLList(userName);
-        final List<String> imageList = new ArrayList<>();
+        final List<String> mediaURLList = twitterClient.getMediaURLList(userName);;
 
         mediaURLList.forEach(url -> {
             try {
                 KaoImageDownloader downloader = new KaoImageDownloader(imagePath);
                 String fileName= url.substring(url.lastIndexOf("/"));
                 downloader.downloadByUrl(url,fileName);
-                imageList.add(fileName);
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         });
 
+        S3Uploader uploader = new S3Uploader(userName);
+        try {
+            uploader.upload(imagePath);
+        } catch (IOException e) {
+            System.out.println("S3 upload faild");
+            e.printStackTrace();
+        }
 
 
     }
